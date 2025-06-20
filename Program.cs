@@ -1,18 +1,32 @@
 ﻿using System;
-using OtpNet;
+using System.Text;
 
 class Program
 {
     static void Main()
     {
+        // Simulate a shared secret (you’d store this per user)
+        var secretKey = Encoding.UTF8.GetBytes("super_secret_shared_key");
 
-        byte[] secretKey = Base32Encoding.ToBytes("JBSWY3DPEHPK3PXP");
+        // Create service
+        var totpService = new CustomTotpService(secretKey);
 
+        // Generate code
+        var otp = totpService.GenerateCode();
+        Console.WriteLine($"Generated OTP: {otp}");
 
-        var totp = new Totp(secretKey, mode: OtpHashMode.Sha256);
+        // Simulate user entering the OTP
+        Console.Write("Enter OTP to verify: ");
+        var input = Console.ReadLine();
 
-        string otp = totp.ComputeTotp(); // e.g., "123456"
-
-        Console.WriteLine($"Current TOTP: {otp}");
+        if (int.TryParse(input, out var inputCode))
+        {
+            bool valid = totpService.ValidateCode(inputCode);
+            Console.WriteLine(valid ? "✅ OTP is valid!" : "❌ OTP is invalid.");
+        }
+        else
+        {
+            Console.WriteLine("❌ Invalid input format.");
+        }
     }
 }
